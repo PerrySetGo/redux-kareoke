@@ -5,8 +5,38 @@ const initialState = {
   songLyricsArray: songLyricsArray,
   arrayPosition: 0,
 }
+//reducer here
+const reducer = (state = initialState, action) =>{
+  switch(action.type) {
+    case 'NEXT_LYRIC':
+    let newArrayPosition = state.arrayPosition + 1; //advance the counter
+    let newState = { //get the new state
+      songLyricsArray:state.songLyricsArray,
+      arrayPosition:newArrayPosition
+    }
+      return newState;
+    default:
+        return state;
+  }
+}
 
-console.log(initialState);
+//jest tests and setup here
+
+const { expect } = window;
+
+expect(reducer(initialState, {type: null})).toEqual(initialState); //not mutating the state, just returning it.
+
+expect(reducer(initialState, {type: 'NEXT_LYRIC'})).toEqual({
+  songLyricsArray:songLyricsArray,
+  arrayPosition:1
+
+})
+
+//redux store
+
+const { createStore } = Redux;
+const store = createStore(reducer);
+console.log(store.getState());
 
 const userClick = () => {
   console.log('click');
