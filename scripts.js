@@ -1,7 +1,8 @@
-const const songList = {
+const songList = {
   1: "Don't want to be a fool for you, Just another player in your game for two, You may hate me but it ain't no lie, Baby bye bye bye, Bye bye, I Don't want to make it tough, I just want to tell you that I've had enough, It might sound crazy but it ain't no lie, Baby bye bye bye".split(', '),
   2: "I'm so into you, I can barely breathe, And all I wanna do is to fall in deep, But close ain't close enough 'til we cross the line, So name a game to play, and I'll roll the dice, hey, Oh baby, look what you started, The temperature's rising in here, Is this gonna happen?, Been waiting and waiting for you to make a move, Before I make a move".split(', ')
 };
+
 // INITIAL REDUX STATE
 const initialState = {
   currentSongId:null,
@@ -23,75 +24,125 @@ const initialState = {
   }
 }
 //reducer here
-const reducer = (state = initialState, action) =>{
-  let newState
+const lyricChangeReducer = (state = initialState.songsById, action) =>{
+  let newArrayPosition;
+  let newSongsByIdEntry;
+  let newSongsByIdStateSlice;
+
   switch(action.type) {
     case 'NEXT_LYRIC':
-      let newArrayPosition = state.arrayPosition + 1; //advance the counter
-      newState = { //get the new state
-        songLyricsArray:state.songLyricsArray,
+      newArrayPosition = state[action.currentSongId].arrayPosition + 1;
+      newSongsByIdEntry = Object.assign({}, state[action.currentSongId], {
         arrayPosition:newArrayPosition
-      }
-      return newState;
+      })
+      newSongsByIdStateSlice = Object.assign({}, state, {
+        [action.currentSongId]: newSongsByIdEntry
+      });
+      return newSongsByIdStateSlice;
     case 'RESTART_SONG':
-      newState = initialState;
-      return newState;
+      newSongsByIdEntry = Object.assign({}, state[action.currentSongId], {
+        arrayPosition: 0
+      })
+      newSongsByIdStateSlice = Object.assign({}, state, {
+        [action.currentSongId]: newSongsByIdEntry
+      });
     default:
-        return state;
+      return state;
   }
 }
+
+const songChangeReducer = (state = initialState.currentSongId, action) => {
+  switch (action.type){
+    case 'CHANGE_SONG':
+      return action.newSelectedSongId
+    default:
+  return state;
+  }
+}
+
 
 //jest tests and setup here
 
 const { expect } = window;
 
-expect(reducer(initialState, {type: null})).toEqual(initialState); //not mutating the state, just returning it.
+expect(lyricChangeReducer(initialState.songsById, {type: null})).toEqual(initialState.songsById); //not mutating the state, just returning it.
 
-expect(reducer(initialState, {type: 'NEXT_LYRIC'})).toEqual({
-  songLyricsArray:songLyricsArray,
-  arrayPosition:1
+expect(lyricChangeReducer(initialState.songsById, {type: 'NEXT_LYRIC', currentSongId:2})).toEqual({
+  1: {
+    title: "Bye Bye Bye",
+    artist: "N'Sync",
+    songId: 1,
+    songArray:songList[1],
+    arrayPosition:0
+  },
+  2: {
+    title: "Into You",
+    artist: "Ariana Grande",
+    songId:2,
+    songArray: songList[2],
+    arrayPosition:1
+  }
 });
 
-expect(reducer({
-  songLyricsArray:songLyricsArray,
-  arrayPosition:1
-},
-{ type:'RESTART_SONG'})
-).toEqual(initialState);
+expect(lyricChangeReducer(initialState.songsById, { type: 'RESTART_SONG', currentSongId:1})).toEqual({
+  1: {
+    title: "Bye Bye Bye",
+    artist: "N'Sync",
+    songId: 1,
+    songArray:songList[1],
+    arrayPosition:0
+  },
+  2: {
+    title: "Into You",
+    artist: "Ariana Grande",
+    songId:2,
+    songArray: songList[2],
+    arrayPosition:0
+  }
+});
+
+expect(songChangeReducer(initialState, {type:null})).toEqual(initialState);
+
+expect(songChangeReducer(initialState.currentSongId, {type:'CHANGE_SONG', newSelectedSongId:1 })).toEqual(1);
+
+
+
 
 
 
 //redux store
 
 const { createStore } = Redux;
-const store = createStore(reducer);
+const store = createStore(lyricChangeReducer);
 console.log(store.getState());
 
-const renderLyrics = () => {
-  const lyricsDisplay = document.getElementById('lyrics');
-  // if there are already lyrics in this div, remove them one-by-one until it is empty:
-  while(lyricsDisplay.firstChild) {
-    lyricsDisplay.removeChild(lyricsDisplay.firstChild)
-  }
-
-  const currentLine = store.getState().songLyricsArray[store.getState().arrayPosition];
-  const renderedLine = document.createTextNode(currentLine);
-  document.getElementById('lyrics').appendChild(renderedLine);
-}
-
-window.onload = function(){
-  renderLyrics();
-}
 
 //UI
-
-const userClick = () => {
-  const currentState = store.getState();
-  if (currentState.arrayPosition === currentState.songLyricsArray.length - 1) {
-    store.dispatch({ type: 'RESTART_SONG' } );
-  } else {
-    store.dispatch({ type: 'NEXT_LYRIC' } );
-  }
-}
-
-store.subscribe(renderLyrics);
+// const renderLyrics = () => {
+//   const lyricsDisplay = document.getElementById('lyrics');
+//   // if there are already lyrics in this div, remove them one-by-one until it is empty:
+//   while(lyricsDisplay.firstChild) {
+//     lyricsDisplay.removeChild(lyricsDisplay.firstChild)
+//   }
+//
+//   const currentLine = store.getState().songLyricsArray[store.getState().arrayPosition];
+//   const renderedLine = document.createTextNode(currentLine);
+//   document.getElementById('lyrics').appendChild(renderedLine);
+// }
+//
+// window.onload = function(){
+//   renderLyrics();
+// }
+//
+//
+//
+// const userClick = () => {
+//   const currentState = store.getState();
+//   if (currentState.arrayPosition === currentState.songLyricsArray.length - 1) {
+//     store.dispatch({ type: 'RESTART_SONG' } );
+//   } else {
+//     store.dispatch({ type: 'NEXT_LYRIC' } );
+//   }
+// }
+//
+// store.subscribe(renderLyrics);
