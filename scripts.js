@@ -118,31 +118,57 @@ console.log(store.getState());
 
 
 //UI
-// const renderLyrics = () => {
-//   const lyricsDisplay = document.getElementById('lyrics');
-//   // if there are already lyrics in this div, remove them one-by-one until it is empty:
-//   while(lyricsDisplay.firstChild) {
-//     lyricsDisplay.removeChild(lyricsDisplay.firstChild)
-//   }
-//
-//   const currentLine = store.getState().songLyricsArray[store.getState().arrayPosition];
-//   const renderedLine = document.createTextNode(currentLine);
-//   document.getElementById('lyrics').appendChild(renderedLine);
-// }
-//
-// window.onload = function(){
-//   renderLyrics();
-// }
-//
-//
-//
-// const userClick = () => {
-//   const currentState = store.getState();
-//   if (currentState.arrayPosition === currentState.songLyricsArray.length - 1) {
-//     store.dispatch({ type: 'RESTART_SONG' } );
-//   } else {
-//     store.dispatch({ type: 'NEXT_LYRIC' } );
-//   }
-// }
-//
-// store.subscribe(renderLyrics);
+const renderLyrics = () => {
+  const lyricsDisplay = document.getElementById('lyrics');
+  // if there are already lyrics in this div, remove them one-by-one until it is empty:
+  while(lyricsDisplay.firstChild) {
+    lyricsDisplay.removeChild(lyricsDisplay.firstChild)
+  }
+
+
+  if (store.getState().currentSongId) {
+    const currentLine = document.createTextNode(store.getState().songsById[store.getState().currentSongId].songArray[stpre.getState().songsById[store.getState().currentSongId].arrayPosition]);
+
+  }
+
+  else {
+    const selectedSongMessage = document.createTextNode("Select a song from the menu to join in!");
+    document.getElementById('lyrics').appendChild(selectedSongMessage)
+  }
+}
+
+window.onload = function(){
+  renderSongs();
+  renderLyrics();
+}
+
+const renderSongs = () => {
+  const songsById = store.getState().songsById;
+  for (const songKey in songsById){
+    const song = songsById[songKey];
+    const li  = document.createElement('li');
+    const h3 = document.createElement('h3');
+    const em = document.createElement('em');
+    const songTitle = document.createTextNode(song.title);
+    const songArtist = document.createTextNode(' by ' + song.artist);
+    em.appendChild(songTitle);
+    h3.appendChild(em);
+    hs.appendChild(songArtist);
+    h3.addEventListener('click', function(){
+      selectSong(song.songId);
+    });
+    li.appendChild(h3);
+    document.getElementById('songs').appendChild(li);
+  }
+}
+
+const userClick = () => {
+  const currentState = store.getState();
+  if (currentState.arrayPosition === currentState.songLyricsArray.length - 1) {
+    store.dispatch({ type: 'RESTART_SONG' } );
+  } else {
+    store.dispatch({ type: 'NEXT_LYRIC' } );
+  }
+}
+
+store.subscribe(renderLyrics);
